@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Invoice Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to right, #74ABE2, #5563DE);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            background: rgba(255,255,255,0.15);
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ff7b54;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #ff5722;
+        }
+
+        iframe {
+            width: 100%;
+            height: 500px;
+            margin-top: 20px;
+            border: 2px solid #fff;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+
+        footer {
+            margin-top: 30px;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        footer strong {
+            color: #ffdd57;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Invoice Generator</h1>
+
+        <input type="text" id="clientName" placeholder="Client Name" />
+        <input type="text" id="invoiceDate" placeholder="Invoice Date (YYYY-MM-DD)" />
+        <input type="number" id="amount" placeholder="Amount ($)" />
+
+        <button id="generateInvoice">Generate Invoice</button>
+
+        <iframe id="invoicePreview"></iframe>
+    </div>
+
+    <footer>
+        Developed by <strong>Karthik Shet</strong>
+    </footer>
+
+    <script>
+        const clientNameInput = document.getElementById('clientName');
+        const invoiceDateInput = document.getElementById('invoiceDate');
+        const amountInput = document.getElementById('amount');
+        const generateInvoiceBtn = document.getElementById('generateInvoice');
+        const invoicePreview = document.getElementById('invoicePreview');
+
+        generateInvoiceBtn.addEventListener('click', () => {
+            const clientName = clientNameInput.value.trim();
+            const invoiceDate = invoiceDateInput.value.trim();
+            const amount = parseFloat(amountInput.value.trim());
+
+            if (!clientName || !invoiceDate || isNaN(amount) || amount <= 0) {
+                return alert('Please fill in valid values for all fields.');
+            }
+
+            const html = `
+                <html>
+                    <head><style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        h1 { text-align: center; }
+                        .details { margin-bottom: 20px; }
+                        .amount { font-size: 24px; font-weight: bold; }
+                    </style></head>
+                    <body>
+                        <h1>Invoice</h1>
+                        <div class="details">
+                            <p><strong>Client Name:</strong> ${clientName}</p>
+                            <p><strong>Date:</strong> ${invoiceDate}</p>
+                        </div>
+                        <div class="amount">
+                            <p>Amount: $${amount.toFixed(2)}</p>
+                        </div>
+                    </body>
+                </html>
+            `;
+
+            const blob = new Blob([html], { type: 'text/html' });
+            invoicePreview.src = URL.createObjectURL(blob);
+        });
+    </script>
+
+</body>
+
+</html>
