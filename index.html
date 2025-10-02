@@ -2,142 +2,207 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Invoice Generator</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Montserrat', sans-serif;
-        }
-
-        body {
-            background: linear-gradient(to right, #74ABE2, #5563DE);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            color: #fff;
-        }
-
-        .container {
-            background: rgba(255,255,255,0.15);
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 600px;
-            width: 100%;
-            text-align: center;
-        }
-
-        input {
-            width: 90%;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border: none;
-            font-size: 16px;
-        }
-
-        button {
-            padding: 10px 20px;
-            margin: 10px;
-            border: none;
-            border-radius: 5px;
-            background-color: #ff7b54;
-            color: #fff;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        button:hover {
-            background-color: #ff5722;
-        }
-
-        iframe {
-            width: 100%;
-            height: 500px;
-            margin-top: 20px;
-            border: 2px solid #fff;
-            border-radius: 8px;
-            background-color: #fff;
-        }
-
-        footer {
-            margin-top: 30px;
-            color: #fff;
-            font-size: 16px;
-            text-align: center;
-        }
-
-        footer strong {
-            color: #ffdd57;
-        }
-    </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Invoice Generator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+    body {
+      background: linear-gradient(to right, #74ABE2, #5563DE);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      color: #fff;
+    }
+    .container {
+      background: rgba(255,255,255,0.15);
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 800px;
+      width: 100%;
+      text-align: center;
+    }
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: none;
+      font-size: 16px;
+    }
+    table { width: 100%; margin-top: 10px; color: #000; }
+    table input { width: 95%; padding: 5px; }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #ff7b54;
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover { background-color: #ff5722; }
+    iframe {
+      width: 100%;
+      height: 600px;
+      margin-top: 20px;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      background-color: #fff;
+    }
+    footer { margin-top: 30px; color: #fff; font-size: 16px; text-align: center; }
+    footer strong { color: #ffdd57; }
+  </style>
 </head>
 
 <body>
 
-    <div class="container">
-        <h1>Invoice Generator</h1>
+  <div class="container">
+    <h1>Invoice Generator</h1>
 
-        <input type="text" id="clientName" placeholder="Client Name" />
-        <input type="text" id="invoiceDate" placeholder="Invoice Date (YYYY-MM-DD)" />
-        <input type="number" id="amount" placeholder="Amount ($)" />
+    <input type="text" id="companyName" placeholder="Your Company Name"/>
+    <input type="text" id="clientName" placeholder="Client Name"/>
+    <input type="text" id="invoiceDate" placeholder="Invoice Date (YYYY-MM-DD)"/>
 
-        <button id="generateInvoice">Generate Invoice</button>
+    <table id="itemsTable" border="1">
+      <thead>
+        <tr style="background:#ddd;">
+          <th>Description</th>
+          <th>Qty</th>
+          <th>Price ($)</th>
+          <th>Total ($)</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="itemsBody">
+        <tr>
+          <td><input type="text" class="desc" placeholder="Item description"></td>
+          <td><input type="number" class="qty" value="1"></td>
+          <td><input type="number" class="price" value="0"></td>
+          <td class="rowTotal">0.00</td>
+          <td><button onclick="removeRow(this)">X</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <button onclick="addRow()">+ Add Item</button>
 
-        <iframe id="invoicePreview"></iframe>
-    </div>
+    <h2 id="grandTotal">Total: $0.00</h2>
 
-    <footer>
-        Developed by <strong>Karthik Shet</strong>
-    </footer>
+    <button id="generateInvoice">Generate Invoice</button>
+    <button id="downloadInvoice">Download PDF</button>
 
-    <script>
-        const clientNameInput = document.getElementById('clientName');
-        const invoiceDateInput = document.getElementById('invoiceDate');
-        const amountInput = document.getElementById('amount');
-        const generateInvoiceBtn = document.getElementById('generateInvoice');
-        const invoicePreview = document.getElementById('invoicePreview');
+    <iframe id="invoicePreview"></iframe>
+  </div>
 
-        generateInvoiceBtn.addEventListener('click', () => {
-            const clientName = clientNameInput.value.trim();
-            const invoiceDate = invoiceDateInput.value.trim();
-            const amount = parseFloat(amountInput.value.trim());
+  <footer>
+    Developed by <strong>Karthik Shet</strong>
+  </footer>
 
-            if (!clientName || !invoiceDate || isNaN(amount) || amount <= 0) {
-                return alert('Please fill in valid values for all fields.');
-            }
+  <!-- html2pdf -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-            const html = `
-                <html>
-                    <head><style>
-                        body { font-family: Arial, sans-serif; padding: 20px; }
-                        h1 { text-align: center; }
-                        .details { margin-bottom: 20px; }
-                        .amount { font-size: 24px; font-weight: bold; }
-                    </style></head>
-                    <body>
-                        <h1>Invoice</h1>
-                        <div class="details">
-                            <p><strong>Client Name:</strong> ${clientName}</p>
-                            <p><strong>Date:</strong> ${invoiceDate}</p>
-                        </div>
-                        <div class="amount">
-                            <p>Amount: $${amount.toFixed(2)}</p>
-                        </div>
-                    </body>
-                </html>
-            `;
+  <script>
+    const invoicePreview = document.getElementById('invoicePreview');
+    const generateInvoiceBtn = document.getElementById('generateInvoice');
+    const downloadInvoiceBtn = document.getElementById('downloadInvoice');
+    let currentInvoiceHTML = '';
 
-            const blob = new Blob([html], { type: 'text/html' });
-            invoicePreview.src = URL.createObjectURL(blob);
-        });
-    </script>
+    function addRow() {
+      const tbody = document.getElementById('itemsBody');
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><input type="text" class="desc" placeholder="Item description"></td>
+        <td><input type="number" class="qty" value="1"></td>
+        <td><input type="number" class="price" value="0"></td>
+        <td class="rowTotal">0.00</td>
+        <td><button onclick="removeRow(this)">X</button></td>
+      `;
+      tbody.appendChild(row);
+    }
+
+    function removeRow(btn) {
+      btn.closest('tr').remove();
+      updateTotals();
+    }
+
+    function updateTotals() {
+      let grandTotal = 0;
+      document.querySelectorAll('#itemsBody tr').forEach(row => {
+        const qty = parseFloat(row.querySelector('.qty').value) || 0;
+        const price = parseFloat(row.querySelector('.price').value) || 0;
+        const total = qty * price;
+        row.querySelector('.rowTotal').textContent = total.toFixed(2);
+        grandTotal += total;
+      });
+      document.getElementById('grandTotal').textContent = `Total: $${grandTotal.toFixed(2)}`;
+    }
+
+    document.getElementById('itemsBody').addEventListener('input', updateTotals);
+
+    generateInvoiceBtn.addEventListener('click', () => {
+      const company = document.getElementById('companyName').value.trim();
+      const client = document.getElementById('clientName').value.trim();
+      const date = document.getElementById('invoiceDate').value.trim();
+
+      if (!company || !client || !date) {
+        return alert('Please fill company, client and date!');
+      }
+
+      updateTotals();
+      const itemsHTML = Array.from(document.querySelectorAll('#itemsBody tr')).map(row => {
+        const desc = row.querySelector('.desc').value;
+        const qty = row.querySelector('.qty').value;
+        const price = row.querySelector('.price').value;
+        const total = row.querySelector('.rowTotal').textContent;
+        return `<tr><td>${desc}</td><td>${qty}</td><td>$${parseFloat(price).toFixed(2)}</td><td>$${total}</td></tr>`;
+      }).join('');
+
+      const totalText = document.getElementById('grandTotal').textContent;
+
+      currentInvoiceHTML = `
+        <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 30px; }
+              h1 { text-align: center; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+              th { background: #f0f0f0; }
+              .summary { margin-top: 20px; font-size: 18px; }
+            </style>
+          </head>
+          <body>
+            <h1>Invoice</h1>
+            <p><strong>Company:</strong> ${company}</p>
+            <p><strong>Client:</strong> ${client}</p>
+            <p><strong>Date:</strong> ${date}</p>
+            <table>
+              <thead>
+                <tr><th>Description</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+              </thead>
+              <tbody>
+                ${itemsHTML}
+              </tbody>
+            </table>
+            <div class="summary"><strong>${totalText}</strong></div>
+          </body>
+        </html>
+      `;
+
+      const blob = new Blob([currentInvoiceHTML], { type: 'text/html' });
+      invoicePreview.src = URL.createObjectURL(blob);
+    });
+
+    downloadInvoiceBtn.addEventListener('click', () => {
+      if (!currentInvoiceHTML) return alert('Please generate invoice first!');
+      const element = document.createElement('div');
+      element.innerHTML = currentInvoiceHTML;
+      html2pdf().from(element).save('invoice.pdf');
+    });
+  </script>
 
 </body>
-
 </html>
